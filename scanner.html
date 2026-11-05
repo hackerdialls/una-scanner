@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scanner AEEMCI S/C UNA</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f6f3;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    .box {
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+    }
+    h2 { color: #08752d; }
+    button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 8px;
+      background: #08752d;
+      color: white;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    #reader { margin-top: 20px; }
+    #message {
+      margin-top: 15px;
+      padding: 12px;
+      background: #edf7ef;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>AEEMCI - S/C UNA</h2>
+    <p>Scanner des reçus du Week-end Culturel</p>
+
+    <div id="reader"></div>
+
+    <div id="message">
+      Appuyez sur Démarrer pour activer la caméra.
+    </div>
+
+    <button id="startBtn" onclick="startCamera()">
+      DÉMARRER LA CAMÉRA
+    </button>
+
+    <button onclick="closeScanner()" style="background:#555">
+      FERMER LE SCANNER
+    </button>
+  </div>
+
+<script>
+let qrScanner = null;
+let running = false;
+let processing = false;
+
+const message = document.getElementById("message");
+
+function showMessage(text) {
+  message.textContent = text;
+}
+
+async function startCamera() {
+  if (running) return;
+
+  try {
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+      throw new Error(
+        "Caméra indisponible. Ouvrez cette page dans Chrome avec HTTPS."
+      );
+    }
+
+    showMessage("Demande d'accès à la caméra...");
+
+    if (!qrScanner) {
+      qrScanner = new Html5Qrcode("reader");
+    }
+
+    await qrScanner.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 230, height: 230 },
+        aspectRatio: 1
+      },
+      onQrDetected,
+      function() {}
+    );
+
+    running = true;
+    showMessage("Caméra activée. Présentez un QR Code.");
+    document.getElementById("startBtn").textContent =
+      "CAMÉRA ACTIVÉE";
+
+  } catch (error) {
+    showMessage(
+      "Erreur caméra : " + (error.message || error)
+    );
+  }
+}
+
+async function onQrDetected(decodedText) {
+  if (processing) return;
+
+  const token = decodedText.trim();
+
+  if (!/^[a-f0-9]{32}$/i.test(token)) {
+    showMessage("QR Code non reconnu.");
+    return;
+  }
+
+  processing = true;
+  showMessage("QR Code détecté. Transmission en cours...");
+
+  try {
+    if (!window.opener || window.opener.closed) {
+      throw new Error(
+        "La fenêtre d'administration est fermée."
+      );
+    }
+
+    await qrScanner.stop();
+    running = false;
+
+    window.opener.postMessage({
+      type: "UNA_QR_SCAN",
+      token: token
+    }, "*");
+
+    showMessage(
+      "QR Code transmis. Vous pouvez scanner le participant suivant."
+    );
+
+    document.getElementById("startBtn").textContent =
+      "SCANNER LE SUIVANT";
+
+  } catch (error) {
+    showMessage(error.message || String(error));
+  }
+
+  processing = false;
+}
+
+async function closeScanner() {
+  try {
+    if (qrScanner && running) {
+      await qrScanner.stop();
+      running = false;
+    }
+  } catch (e) {}
+
+  window.close();
+}
+</script>
+</body>
+</html>
