@@ -1,169 +1,1099 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scanner AEEMCI S/C UNA</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f3f6f3;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-    .box {
-      max-width: 500px;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 14px;
-    }
-    h2 { color: #08752d; }
-    button {
-      width: 100%;
-      padding: 14px;
-      border: 0;
-      border-radius: 8px;
-      background: #08752d;
-      color: white;
-      font-weight: bold;
-      margin-top: 12px;
-    }
-    #reader { margin-top: 20px; }
-    #message {
-      margin-top: 15px;
-      padding: 12px;
-      background: #edf7ef;
-      border-radius: 8px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08752d">
+<meta name="robots" content="noindex">
+<title>Scanner de pointage – Week-end Culturel AEEMCI S/C UNA</title>
+<link rel="icon" href="assets/logo_aeemci.png">
+
+<style>
+:root {
+  --green: #08752d;
+  --green-dark: #055a22;
+  --orange: #ed8700;
+  --light: #f3f6f3;
+  --soft: #edf7ef;
+  --red: #b3261e;
+  --blue: #1f5fa8;
+  --text: #1c2b21;
+  --muted: #5d6b62;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--light);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: white;
+  box-shadow: 0 0 25px rgba(0,0,0,.06);
+}
+
+.hidden { display: none !important; }
+
+/* ---------- En-tête ---------- */
+
+.logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 16px 10px;
+}
+
+.logos img { display: block; width: auto; object-fit: contain; }
+.logo-aeemci { height: 58px; }
+.logo-50 { height: 44px; max-width: 55%; }
+.logos .sep { width: 1px; align-self: stretch; background: #e1e6e2; }
+
+.strip {
+  height: 5px;
+  background: linear-gradient(90deg, var(--green) 0%, var(--green) 45%, var(--orange) 100%);
+}
+
+.title {
+  background: var(--green);
+  color: white;
+  text-align: center;
+  padding: 12px 14px;
+}
+
+.title strong { display: block; font-size: 18px; letter-spacing: .5px; }
+.title span { font-size: 12px; opacity: .92; }
+
+main { padding: 16px; }
+
+/* ---------- Formulaires ---------- */
+
+label {
+  display: block;
+  font-weight: bold;
+  font-size: 14px;
+  margin: 14px 0 6px;
+}
+
+input, select {
+  width: 100%;
+  padding: 13px;
+  font-size: 16px;
+  border: 1px solid #d3d9d4;
+  border-radius: 9px;
+  background: white;
+  color: var(--text);
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 9px;
+  padding: 13px 14px;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: inherit;
+}
+
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+.btn-primary { width: 100%; margin-top: 18px; background: var(--green); color: white; }
+.btn-light { background: #eef1ef; color: var(--text); }
+
+.msg {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 9px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.msg.info { background: var(--soft); }
+.msg.error { background: #fdecea; color: var(--red); }
+
+.card-intro {
+  background: var(--soft);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---------- Écran de scan ---------- */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar select {
+  flex: 1;
+  padding: 10px;
+  font-weight: bold;
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.net {
+  font-size: 13px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.net.online { color: var(--green); }
+.net.offline { color: var(--red); }
+
+.counters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.counters div {
+  background: var(--soft);
+  border-radius: 10px;
+  padding: 9px 4px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.counters strong {
+  display: block;
+  font-size: 22px;
+  color: var(--green);
+}
+
+.counters .queue strong { color: var(--blue); }
+
+#reader {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+  min-height: 220px;
+}
+
+#reader video { border-radius: 12px; }
+
+.result {
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.result .r-title { font-size: 20px; font-weight: bold; }
+.result .r-sub { margin-top: 6px; font-size: 15px; white-space: pre-line; line-height: 1.4; }
+
+.result.idle { background: #f4f6f5; color: var(--muted); }
+.result.loading { background: #f4f6f5; color: var(--text); }
+.result.success { background: var(--green); color: white; }
+.result.already { background: var(--orange); color: white; }
+.result.error { background: var(--red); color: white; }
+.result.queued { background: var(--blue); color: white; }
+
+.manual {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.manual input { flex: 1; text-transform: uppercase; }
+.manual button { background: var(--green); color: white; }
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+h3 {
+  margin: 20px 0 8px;
+  font-size: 15px;
+  color: var(--green);
+}
+
+#history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#history li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 0;
+  border-bottom: 1px solid #eef1ef;
+  font-size: 13px;
+}
+
+#history .dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+#history .success .dot { background: var(--green); }
+#history .already .dot { background: var(--orange); }
+#history .error .dot { background: var(--red); }
+#history .queued .dot { background: var(--blue); }
+
+#history .h-main { flex: 1; }
+#history .h-title { font-weight: bold; }
+#history .h-sub { color: var(--muted); margin-top: 2px; }
+#history .h-time { color: var(--muted); white-space: nowrap; }
+
+.empty { color: var(--muted); font-size: 13px; }
+
+footer {
+  text-align: center;
+  padding: 18px 12px 26px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+footer strong { color: var(--green); }
+</style>
 </head>
+
 <body>
-  <div class="box">
-    <h2>AEEMCI - S/C UNA</h2>
-    <p>Scanner des reçus du Week-end Culturel</p>
 
-    <div id="reader"></div>
+<div class="app">
 
-    <div id="message">
-      Appuyez sur Démarrer pour activer la caméra.
+  <header>
+    <div class="logos">
+      <img class="logo-aeemci" src="assets/logo_aeemci.png" alt="Logo AEEMCI">
+      <span class="sep" aria-hidden="true"></span>
+      <img class="logo-50" src="assets/logo_50ans.png" alt="Logo 50 ans AEEMCI">
     </div>
+    <div class="strip"></div>
+    <div class="title">
+      <strong>SCANNER DE POINTAGE</strong>
+      <span>6ᵉ Week-end Culturel – AEEMCI S/C UNA – 20 au 22 nov. 2026</span>
+    </div>
+  </header>
 
-    <button id="startBtn" onclick="startCamera()">
-      DÉMARRER LA CAMÉRA
-    </button>
+  <main>
 
-    <button onclick="closeScanner()" style="background:#555">
-      FERMER LE SCANNER
-    </button>
-  </div>
+    <!-- Configuration manquante -->
+
+    <section id="configView" class="hidden">
+      <div class="msg error">
+        <b>Scanner non configuré.</b><br>
+        Ouvrez le fichier <b>config.js</b> du dépôt GitHub et collez
+        l'URL de l'application web Apps Script (elle se termine par
+        <b>/exec</b>) dans <b>API_URL</b>.
+      </div>
+    </section>
+
+
+    <!-- Connexion -->
+
+    <section id="loginView" class="hidden">
+
+      <div class="card-intro">
+        Accès réservé aux agents d'accueil. Saisissez le code PIN
+        du comité puis choisissez la journée.
+      </div>
+
+      <label for="pin">Code PIN</label>
+      <input id="pin" type="password" autocomplete="current-password"
+             placeholder="Code PIN administrateur" maxlength="40">
+
+      <label for="day">Journée de pointage</label>
+      <select id="day">
+        <option value="20">Vendredi 20 novembre 2026</option>
+        <option value="21">Samedi 21 novembre 2026</option>
+        <option value="22">Dimanche 22 novembre 2026</option>
+      </select>
+
+      <button id="loginBtn" class="btn-primary" type="button">
+        COMMENCER LE POINTAGE
+      </button>
+
+      <div id="loginMsg" class="msg hidden"></div>
+
+    </section>
+
+
+    <!-- Pointage -->
+
+    <section id="scanView" class="hidden">
+
+      <div class="bar">
+        <select id="daySwitch" aria-label="Journée de pointage">
+          <option value="20">Ven. 20 novembre</option>
+          <option value="21">Sam. 21 novembre</option>
+          <option value="22">Dim. 22 novembre</option>
+        </select>
+        <span id="net" class="net online">● En ligne</span>
+      </div>
+
+      <div class="counters">
+        <div><strong id="cDay">–</strong>Présents ce jour</div>
+        <div><strong id="cTotal">–</strong>Inscrits</div>
+        <div class="queue"><strong id="cQueue">0</strong>En attente</div>
+      </div>
+
+      <div id="reader"></div>
+
+      <div id="camMsg" class="msg error hidden"></div>
+
+      <div id="result" class="result idle">
+        <div class="r-title">Présentez un QR Code</div>
+        <div class="r-sub">Placez le QR Code du reçu dans le cadre.</div>
+      </div>
+
+      <div class="manual">
+        <input id="manualCode" placeholder="UNA-WC26-00006"
+               autocomplete="off" maxlength="40" aria-label="Référence du participant">
+        <button id="manualBtn" type="button">POINTER</button>
+      </div>
+
+      <div class="actions">
+        <button id="toggleCam" class="btn-light" type="button">Pause caméra</button>
+        <button id="switchCam" class="btn-light" type="button">Changer de caméra</button>
+      </div>
+
+      <h3>Derniers pointages sur cet appareil</h3>
+      <ul id="history"></ul>
+
+      <div class="actions">
+        <button id="refreshBtn" class="btn-light" type="button">Actualiser</button>
+        <button id="logoutBtn" class="btn-light" type="button">Déconnexion</button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    <strong>S/C UNA, la science notre priorité !</strong><br>
+    AEEMCI, pour une identité islamique !
+  </footer>
+
+</div>
+
+<script src="config.js"></script>
+<script src="assets/html5-qrcode.min.js"></script>
 
 <script>
-let qrScanner = null;
-let running = false;
-let processing = false;
+(function () {
+  "use strict";
 
-const message = document.getElementById("message");
+  /* =====================================================
+   * CONFIGURATION
+   * ===================================================== */
 
-function showMessage(text) {
-  message.textContent = text;
-}
+  var CFG = window.UNA_CONFIG || {};
+  var API_URL = String(CFG.API_URL || "").trim();
 
-async function startCamera() {
-  if (running) return;
+  var REF_RE = /^UNA-WC26-\d{5}$/;
+  var TOKEN_RE = /^[a-f0-9]{32}$/i;
+  var QUEUE_KEY = "una_scan_queue_v1";
+  var HISTORY_KEY = "una_scan_history_v1";
+  var HISTORY_MAX = 25;
+  var EVENT_DAYS = { "2026-11-20": "20", "2026-11-21": "21", "2026-11-22": "22" };
 
-  try {
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-      throw new Error(
-        "Caméra indisponible. Ouvrez cette page dans Chrome avec HTTPS."
-      );
-    }
+  var state = {
+    pin: "",
+    day: "20",
+    stats: null,
+    online: navigator.onLine,
+    busy: false,
+    lastCode: "",
+    lastAt: 0,
+    scanner: null,
+    cameras: [],
+    camIndex: -1,
+    running: false,
+    paused: false,
+    syncing: false,
+    wakeLock: null
+  };
 
-    showMessage("Demande d'accès à la caméra...");
+  function $(id) { return document.getElementById(id); }
 
-    if (!qrScanner) {
-      qrScanner = new Html5Qrcode("reader");
-    }
+  function show(id, visible) { $(id).classList.toggle("hidden", !visible); }
 
-    await qrScanner.start(
-      { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: { width: 230, height: 230 },
-        aspectRatio: 1
-      },
-      onQrDetected,
-      function() {}
-    );
+  /* =====================================================
+   * APPELS À L'API APPS SCRIPT
+   * ===================================================== */
 
-    running = true;
-    showMessage("Caméra activée. Présentez un QR Code.");
-    document.getElementById("startBtn").textContent =
-      "CAMÉRA ACTIVÉE";
-
-  } catch (error) {
-    showMessage(
-      "Erreur caméra : " + (error.message || error)
-    );
+  function NetworkError(message) {
+    this.name = "NetworkError";
+    this.message = message;
   }
-}
+  NetworkError.prototype = Object.create(Error.prototype);
 
-async function onQrDetected(decodedText) {
-  if (processing) return;
+  function api(payload) {
+    var body = JSON.stringify(Object.assign({ pin: state.pin }, payload));
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, 25000);
 
-  const token = decodedText.trim();
-
-  if (!/^[a-f0-9]{32}$/i.test(token)) {
-    showMessage("QR Code non reconnu.");
-    return;
-  }
-
-  processing = true;
-  showMessage("QR Code détecté. Transmission en cours...");
-
-  try {
-    if (!window.opener || window.opener.closed) {
-      throw new Error(
-        "La fenêtre d'administration est fermée."
-      );
-    }
-
-    await qrScanner.stop();
-    running = false;
-
-    window.opener.postMessage({
-      type: "UNA_QR_SCAN",
-      token: token
-    }, "*");
-
-    showMessage(
-      "QR Code transmis. Vous pouvez scanner le participant suivant."
-    );
-
-    document.getElementById("startBtn").textContent =
-      "SCANNER LE SUIVANT";
-
-  } catch (error) {
-    showMessage(error.message || String(error));
+    // text/plain = requête « simple » : pas de pré-vérification CORS.
+    return fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: body,
+      redirect: "follow",
+      signal: controller.signal
+    })
+      .then(function (response) { return response.text(); }, function (err) {
+        throw new NetworkError(err && err.name === "AbortError"
+          ? "Délai de réponse dépassé."
+          : "Réseau indisponible.");
+      })
+      .then(function (text) {
+        clearTimeout(timer);
+        setOnline(true);
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          throw new Error(
+            "Réponse inattendue du serveur. Vérifiez l'URL dans config.js " +
+            "et que le déploiement Apps Script est accessible à « Tout le monde »."
+          );
+        }
+      }, function (err) {
+        clearTimeout(timer);
+        if (err instanceof NetworkError) { setOnline(false); throw err; }
+        setOnline(false);
+        throw new NetworkError("Réseau indisponible.");
+      });
   }
 
-  processing = false;
-}
+  function setOnline(value) {
+    state.online = value;
+    var el = $("net");
+    el.textContent = value ? "● En ligne" : "● Hors ligne";
+    el.className = "net " + (value ? "online" : "offline");
+  }
 
-async function closeScanner() {
-  try {
-    if (qrScanner && running) {
-      await qrScanner.stop();
-      running = false;
+  /* =====================================================
+   * CONNEXION
+   * ===================================================== */
+
+  function defaultDay() {
+    // Abidjan = UTC : la date ISO correspond à la date locale.
+    return EVENT_DAYS[new Date().toISOString().slice(0, 10)] || "20";
+  }
+
+  function loginMessage(text, kind) {
+    var el = $("loginMsg");
+    el.textContent = text;
+    el.className = "msg " + (kind || "info");
+  }
+
+  function login() {
+    var pin = $("pin").value.trim();
+
+    unlockAudio();
+
+    if (!pin) {
+      loginMessage("Saisissez le code PIN.", "error");
+      return;
     }
-  } catch (e) {}
 
-  window.close();
-}
+    $("loginBtn").disabled = true;
+    loginMessage("Connexion en cours…", "info");
+    state.pin = pin;
+
+    api({ action: "login" })
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.error || "Connexion refusée."); }
+
+        state.day = $("day").value;
+        sessionStorage.setItem("una_pin", pin);
+        sessionStorage.setItem("una_day", state.day);
+        $("loginMsg").classList.add("hidden");
+        enterScanView(res.stats);
+      })
+      .catch(function (err) {
+        state.pin = "";
+        loginMessage(err instanceof NetworkError
+          ? "Impossible de joindre le serveur. Vérifiez la connexion Internet, " +
+            "l'URL dans config.js et que le web app est déployé avec l'accès « Tout le monde »."
+          : err.message, "error");
+      })
+      .then(function () { $("loginBtn").disabled = false; });
+  }
+
+  function logout(message) {
+    stopCamera();
+    state.pin = "";
+    sessionStorage.removeItem("una_pin");
+    $("pin").value = "";
+    show("scanView", false);
+    show("loginView", true);
+
+    if (message) { loginMessage(message, "error"); }
+  }
+
+  /* =====================================================
+   * ÉCRAN DE POINTAGE
+   * ===================================================== */
+
+  function enterScanView(stats) {
+    show("loginView", false);
+    show("scanView", true);
+
+    $("daySwitch").value = state.day;
+
+    if (stats) { updateStats(stats); }
+
+    renderHistory();
+    updateQueueCount();
+    keepAwake();
+    startCamera();
+    syncQueue();
+  }
+
+  function updateStats(stats) {
+    state.stats = stats;
+    $("cDay").textContent = stats["day" + state.day];
+    $("cTotal").textContent = stats.total;
+  }
+
+  function refreshStats() {
+    if (!state.pin) { return; }
+
+    api({ action: "stats" })
+      .then(function (res) {
+        if (res.ok) { updateStats(res.stats); }
+        else if (/PIN/i.test(res.error)) { logout("Code PIN refusé. Reconnectez-vous."); }
+      })
+      .catch(function () { /* hors ligne : on réessaiera */ });
+  }
+
+  function showResult(kind, title, sub) {
+    var el = $("result");
+    el.className = "result " + kind;
+    el.querySelector(".r-title").textContent = title;
+    el.querySelector(".r-sub").textContent = sub || "";
+  }
+
+  /* =====================================================
+   * CAMÉRA (html5-qrcode)
+   * ===================================================== */
+
+  function cameraMessage(text) {
+    $("camMsg").textContent = text;
+    show("camMsg", !!text);
+  }
+
+  function startCamera() {
+    if (typeof Html5Qrcode === "undefined") {
+      cameraMessage("Bibliothèque de lecture introuvable (assets/html5-qrcode.min.js). " +
+        "Utilisez la saisie manuelle de la référence.");
+      return Promise.resolve();
+    }
+
+    if (!window.isSecureContext) {
+      cameraMessage("La caméra nécessite une adresse en https://.");
+      return Promise.resolve();
+    }
+
+    if (!state.scanner) {
+      state.scanner = new Html5Qrcode("reader", {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+        verbose: false
+      });
+    }
+
+    var source = state.camIndex >= 0 && state.cameras[state.camIndex]
+      ? { deviceId: { exact: state.cameras[state.camIndex].id } }
+      : { facingMode: "environment" };
+
+    var config = {
+      fps: 10,
+      qrbox: function (w, h) {
+        var size = Math.max(160, Math.floor(Math.min(w, h) * 0.72));
+        return { width: size, height: size };
+      }
+    };
+
+    return state.scanner.start(source, config, onDecoded, function () {})
+      .then(function () {
+        state.running = true;
+        state.paused = false;
+        cameraMessage("");
+        localizeReader();
+        updateCameraButtons();
+
+        if (!state.cameras.length) {
+          return Html5Qrcode.getCameras().then(function (list) {
+            state.cameras = list || [];
+            updateCameraButtons();
+          }, function () {});
+        }
+      })
+      .catch(function (err) {
+        state.running = false;
+        var text = String((err && (err.name || err.message)) || err);
+
+        if (/NotAllowed|Permission/i.test(text + String(err))) {
+          cameraMessage("Accès à la caméra refusé. Touchez le cadenas à côté de " +
+            "l'adresse → Autorisations → Caméra : Autoriser, puis rechargez la page.");
+        } else if (/NotFound|Overconstrained|Requested device/i.test(text + String(err))) {
+          cameraMessage("Aucune caméra disponible sur cet appareil. " +
+            "Utilisez la saisie manuelle de la référence.");
+        } else {
+          cameraMessage("Impossible de démarrer la caméra : " + text);
+        }
+        updateCameraButtons();
+      });
+  }
+
+  /* Traduit le libellé « Scanner paused » ajouté par la bibliothèque. */
+  function localizeReader() {
+    var nodes = $("reader").querySelectorAll("div");
+
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].children.length && /Scanner paused/i.test(nodes[i].textContent)) {
+        nodes[i].textContent = "Caméra en pause";
+      }
+    }
+  }
+
+  function stopCamera() {
+    if (state.scanner && state.running) {
+      return state.scanner.stop().then(function () {
+        state.running = false;
+        state.paused = false;
+      }, function () { state.running = false; });
+    }
+    return Promise.resolve();
+  }
+
+  function pauseScan() {
+    try {
+      if (state.scanner && state.running && !state.paused) { state.scanner.pause(true); }
+    } catch (e) { /* ignoré */ }
+    localizeReader();
+  }
+
+  function resumeScan() {
+    try {
+      if (state.scanner && state.running && !state.paused) { state.scanner.resume(); }
+    } catch (e) { /* déjà actif */ }
+  }
+
+  function toggleCamera() {
+    if (!state.running) { startCamera(); return; }
+
+    if (state.paused) {
+      state.paused = false;
+      try { state.scanner.resume(); } catch (e) {}
+    } else {
+      try { state.scanner.pause(true); } catch (e) {}
+      state.paused = true;
+      localizeReader();
+    }
+    updateCameraButtons();
+  }
+
+  function switchCamera() {
+    if (state.cameras.length < 2) { return; }
+
+    state.camIndex = (state.camIndex + 1) % state.cameras.length;
+    stopCamera().then(startCamera);
+  }
+
+  function updateCameraButtons() {
+    $("toggleCam").textContent = !state.running
+      ? "Démarrer la caméra"
+      : (state.paused ? "Reprendre la caméra" : "Pause caméra");
+    $("switchCam").disabled = state.cameras.length < 2;
+  }
+
+  /* =====================================================
+   * TRAITEMENT D'UN CODE
+   * ===================================================== */
+
+  function onDecoded(text) {
+    var code = String(text || "").trim();
+    var now = Date.now();
+
+    if (state.busy) { return; }
+    if (code === state.lastCode && now - state.lastAt < 5000) { return; }
+
+    state.lastCode = code;
+    state.lastAt = now;
+    processCode(code);
+  }
+
+  function normalize(raw) {
+    var code = String(raw || "").trim();
+    return REF_RE.test(code.toUpperCase()) ? code.toUpperCase() : code;
+  }
+
+  function shortLabel(code) {
+    return REF_RE.test(code) ? code : "QR " + code.slice(0, 6) + "…";
+  }
+
+  function processCode(raw) {
+    var code = normalize(raw);
+    var day = state.day;
+
+    if (!TOKEN_RE.test(code) && !REF_RE.test(code)) {
+      showResult("error", "QR Code non reconnu",
+        "Ce code n'est pas un reçu du Week-end Culturel.");
+      feedback("error");
+      return;
+    }
+
+    state.busy = true;
+    pauseScan();
+    showResult("loading", "Vérification…", shortLabel(code));
+
+    api({ action: "scan", code: code, day: day })
+      .then(function (res) {
+        handleScanResponse(res, code, day, false);
+      })
+      .catch(function (err) {
+        if (err instanceof NetworkError) {
+          enqueue(code, day);
+          showResult("queued", "HORS LIGNE – EN ATTENTE",
+            shortLabel(code) + "\nLe pointage sera envoyé dès le retour du réseau.");
+          feedback("warn");
+          addHistory("queued", shortLabel(code), "En attente de synchronisation", day);
+        } else {
+          showResult("error", "Erreur", err.message);
+          feedback("error");
+        }
+      })
+      .then(function () {
+        setTimeout(function () {
+          state.busy = false;
+          resumeScan();
+        }, 1800);
+      });
+  }
+
+  function handleScanResponse(res, code, day, fromQueue) {
+    var suffix = fromQueue ? " (synchronisé)" : "";
+
+    if (!res.ok) {
+      if (/PIN/i.test(res.error)) {
+        logout("Code PIN refusé. Reconnectez-vous.");
+        return;
+      }
+      if (!fromQueue) {
+        showResult("error", "REFUSÉ", res.error);
+        feedback("error");
+      }
+      addHistory("error", res.error, shortLabel(code) + suffix, day);
+      return;
+    }
+
+    var s = res.scan;
+
+    if (res.stats) { updateStats(res.stats); }
+
+    if (s.alreadyPresent) {
+      if (!fromQueue) {
+        showResult("already", "DÉJÀ POINTÉ",
+          s.nom + "\n" + s.reference + " – pointé le " + s.date);
+        feedback("warn");
+      }
+      addHistory("already", s.nom, s.reference + " · déjà pointé le " + s.date + suffix, day);
+
+    } else if (s.success) {
+      if (!fromQueue) {
+        showResult("success", "PRÉSENCE ENREGISTRÉE ✓",
+          s.nom + "\n" + s.categorie + " · " + s.reference);
+        feedback("success");
+      }
+      addHistory("success", s.nom, s.categorie + " · " + s.reference + suffix, day);
+    }
+  }
+
+  function manualEntry() {
+    var input = $("manualCode");
+    var value = input.value.trim().toUpperCase();
+
+    unlockAudio();
+
+    if (!REF_RE.test(value)) {
+      showResult("error", "Format incorrect", "Exemple attendu : UNA-WC26-00006");
+      feedback("error");
+      return;
+    }
+
+    // Un pointage est en cours : on réessaie dès qu'il est terminé.
+    if (state.busy) {
+      setTimeout(manualEntry, 400);
+      return;
+    }
+
+    input.value = "";
+    processCode(value);
+  }
+
+  /* =====================================================
+   * FILE D'ATTENTE HORS LIGNE
+   * ===================================================== */
+
+  function readQueue() {
+    try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); }
+    catch (e) { return []; }
+  }
+
+  function writeQueue(queue) {
+    try { localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); } catch (e) {}
+    updateQueueCount();
+  }
+
+  function enqueue(code, day) {
+    var queue = readQueue();
+    var exists = queue.some(function (i) { return i.code === code && i.day === day; });
+
+    if (!exists) {
+      queue.push({ code: code, day: day, at: Date.now() });
+      writeQueue(queue);
+    }
+  }
+
+  function updateQueueCount() {
+    $("cQueue").textContent = readQueue().length;
+  }
+
+  function syncQueue() {
+    if (state.syncing || !state.pin || !readQueue().length) { return; }
+
+    state.syncing = true;
+
+    function next() {
+      var queue = readQueue();
+
+      if (!queue.length || !state.pin) {
+        state.syncing = false;
+        return;
+      }
+
+      var item = queue[0];
+
+      api({ action: "scan", code: item.code, day: item.day })
+        .then(function (res) { return res; }, function (err) {
+          if (err instanceof NetworkError) { throw err; }
+          return { ok: false, error: err.message };
+        })
+        .then(function (res) {
+          writeQueue(readQueue().filter(function (i) {
+            return !(i.code === item.code && i.day === item.day);
+          }));
+          handleScanResponse(res, item.code, item.day, true);
+          next();
+        })
+        .catch(function () {
+          state.syncing = false; // toujours hors ligne
+        });
+    }
+
+    next();
+  }
+
+  /* =====================================================
+   * HISTORIQUE (stocké sur l'appareil)
+   * ===================================================== */
+
+  function readHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+    catch (e) { return []; }
+  }
+
+  function addHistory(kind, title, sub, day) {
+    var list = readHistory();
+    list.unshift({ kind: kind, title: title, sub: sub, day: day, at: Date.now() });
+
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, HISTORY_MAX))); }
+    catch (e) {}
+
+    renderHistory();
+  }
+
+  function renderHistory() {
+    var ul = $("history");
+    var list = readHistory();
+
+    ul.innerHTML = "";
+
+    if (!list.length) {
+      var empty = document.createElement("li");
+      empty.className = "empty";
+      empty.textContent = "Aucun pointage pour le moment.";
+      ul.appendChild(empty);
+      return;
+    }
+
+    list.forEach(function (item) {
+      var li = document.createElement("li");
+      li.className = item.kind;
+
+      var dot = document.createElement("span");
+      dot.className = "dot";
+
+      var main = document.createElement("div");
+      main.className = "h-main";
+
+      var t = document.createElement("div");
+      t.className = "h-title";
+      t.textContent = item.title;
+
+      var s = document.createElement("div");
+      s.className = "h-sub";
+      s.textContent = item.sub + " · jour " + item.day;
+
+      var time = document.createElement("span");
+      time.className = "h-time";
+      time.textContent = new Date(item.at).toLocaleTimeString("fr-FR", {
+        hour: "2-digit", minute: "2-digit"
+      });
+
+      main.appendChild(t);
+      main.appendChild(s);
+      li.appendChild(dot);
+      li.appendChild(main);
+      li.appendChild(time);
+      ul.appendChild(li);
+    });
+  }
+
+  /* =====================================================
+   * SON, VIBRATION, ÉCRAN ALLUMÉ
+   * ===================================================== */
+
+  var audioCtx = null;
+
+  function unlockAudio() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") { audioCtx.resume(); }
+    } catch (e) {}
+  }
+
+  function beep(freq, duration, delay) {
+    if (!audioCtx) { return; }
+    try {
+      var t = audioCtx.currentTime + (delay || 0);
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+      osc.start(t);
+      osc.stop(t + duration);
+    } catch (e) {}
+  }
+
+  function vibrate(pattern) {
+    try { if (navigator.vibrate) { navigator.vibrate(pattern); } } catch (e) {}
+  }
+
+  function feedback(kind) {
+    if (kind === "success") {
+      beep(880, 0.15); vibrate(80);
+    } else if (kind === "warn") {
+      beep(560, 0.14); beep(560, 0.14, 0.2); vibrate([60, 60, 60]);
+    } else {
+      beep(220, 0.4); vibrate([200, 80, 200]);
+    }
+  }
+
+  function keepAwake() {
+    try {
+      if ("wakeLock" in navigator) {
+        navigator.wakeLock.request("screen").then(function (lock) {
+          state.wakeLock = lock;
+        }, function () {});
+      }
+    } catch (e) {}
+  }
+
+  /* =====================================================
+   * DÉMARRAGE
+   * ===================================================== */
+
+  function init() {
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(API_URL)) {
+      show("configView", true);
+      return;
+    }
+
+    $("day").value = defaultDay();
+
+    $("loginBtn").addEventListener("click", login);
+    $("pin").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { login(); }
+    });
+
+    $("manualBtn").addEventListener("click", manualEntry);
+    $("manualCode").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { manualEntry(); }
+    });
+
+    $("toggleCam").addEventListener("click", toggleCamera);
+    $("switchCam").addEventListener("click", switchCamera);
+    $("refreshBtn").addEventListener("click", function () {
+      unlockAudio();
+      refreshStats();
+      syncQueue();
+    });
+    $("logoutBtn").addEventListener("click", function () { logout(""); });
+
+    $("daySwitch").addEventListener("change", function () {
+      state.day = this.value;
+      sessionStorage.setItem("una_day", state.day);
+      if (state.stats) { updateStats(state.stats); }
+      showResult("idle", "Journée : " + this.options[this.selectedIndex].text,
+        "Présentez un QR Code.");
+    });
+
+    document.addEventListener("click", unlockAudio);
+    window.addEventListener("online", function () { setOnline(true); syncQueue(); });
+    window.addEventListener("offline", function () { setOnline(false); });
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible" && state.pin) { keepAwake(); }
+    });
+
+    setInterval(syncQueue, 15000);
+    setInterval(refreshStats, 60000);
+    setOnline(navigator.onLine);
+
+    // Reprise de session (rechargement de la page).
+    var savedPin = sessionStorage.getItem("una_pin");
+
+    if (savedPin) {
+      state.pin = savedPin;
+      state.day = sessionStorage.getItem("una_day") || defaultDay();
+      enterScanView(null);
+      refreshStats();
+    } else {
+      show("loginView", true);
+    }
+  }
+
+  init();
+})();
 </script>
+
 </body>
 </html>
