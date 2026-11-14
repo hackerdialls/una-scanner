@@ -10,5 +10,5 @@
  *     - Qui a accès : Tout le monde
  */
 window.UNA_CONFIG = {
-  API_URL: "COLLER_ICI_L_URL_QUI_SE_TERMINE_PAR_/exec"
+  API_URL: "https://script.google.com/macros/s/AKfycbwyL9BSDqLD8Hc_j0T600g7FeFs3Eva_tvecOZYxGd0u9RaW-KjipO_VQl_F5uyahUy/exec"
 };
